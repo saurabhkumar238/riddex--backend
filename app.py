@@ -68,7 +68,7 @@ def login(user: User):
     return {"message": "Login successful"}
 
 # -------- API KEY -------- #
-API_KEY = "YOUR_OPENROUTER_API_KEY"
+API_KEY = "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"
 
 # -------- 🔥 RIDDEX AI SYSTEM PROMPT -------- #
 SYSTEM_PROMPT = """
