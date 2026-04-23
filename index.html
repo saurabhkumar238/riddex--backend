@@ -11,7 +11,6 @@ body {
     color:white;
 }
 
-/* HEADER */
 .header {
     height:70px;
     display:flex;
@@ -22,7 +21,6 @@ body {
     display:none;
 }
 
-/* SIDEBAR */
 .sidebar {
     width:220px;
     height:100vh;
@@ -45,14 +43,12 @@ body {
     color:black;
 }
 
-/* MAIN */
 .main {
     margin-left:240px;
     padding:20px;
     display:none;
 }
 
-/* CHAT */
 .chat-box {
     height:400px;
     overflow:auto;
@@ -71,7 +67,6 @@ body {
 .user { background:cyan; color:black; margin-left:auto; }
 .ai { background:#1e293b; }
 
-/* INPUT */
 .input-box {
     display:flex;
     margin-top:10px;
@@ -93,7 +88,6 @@ button {
     cursor:pointer;
 }
 
-/* SECTIONS */
 .section { display:none; }
 .active { display:block; }
 
@@ -110,7 +104,6 @@ pre {
     padding:10px;
 }
 
-/* LOGIN */
 #auth {
     width:300px;
     margin:100px auto;
@@ -124,7 +117,6 @@ pre {
 
 <body>
 
-<!-- LOGIN -->
 <div id="auth">
     <h2>Riddex AI</h2>
     <input id="username" placeholder="Username"><br><br>
@@ -140,9 +132,6 @@ pre {
     <div class="mode" onclick="show('chat')">Chat</div>
     <div class="mode" onclick="show('code')">Code</div>
     <div class="mode" onclick="show('debug')">Debug</div>
-    <div class="mode" onclick="show('google')">Google DSA</div>
-    <div class="mode" onclick="show('interview')">Interview AI</div>
-    <div class="mode" onclick="show('friends')">Friends</div>
 </div>
 
 <div class="main">
@@ -167,27 +156,11 @@ pre {
     <pre id="debug-output"></pre>
 </div>
 
-<div id="google" class="section">
-    <h2>Google DSA</h2>
-    <div class="msg ai">1. Two Sum</div>
-    <div class="msg ai">2. Longest Substring</div>
-</div>
-
-<div id="interview" class="section">
-    <div class="chat-box" id="interviewBox"></div>
-    <input id="interviewInput">
-    <button onclick="askInterview()">Ask</button>
-</div>
-
-<div id="friends" class="section">
-    <div class="chat-box" id="friendsBox"></div>
-    <input id="friendInput">
-    <button onclick="sendFriend()">Send</button>
-</div>
-
 </div>
 
 <script>
+
+const BASE_URL = "https://riddex-backend.onrender.com";
 
 /* SHOW */
 function show(id){
@@ -196,27 +169,19 @@ function show(id){
 }
 
 /* LOGIN */
-
-/* LOGIN */
 async function login(){
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
 
-    let res = await fetch("http://127.0.0.1:8000/login",{
+    let res = await fetch(`${BASE_URL}/login`,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({username,password})
     });
 
-    let data;
-    try{
-        data = await res.json();
-    }catch{
-        document.getElementById("msg").innerText = "Server error";
-        return;
-    }
+    let data = await res.json();
 
-    if(res.status==200){
+    if(res.ok){
         document.getElementById("auth").style.display="none";
         document.querySelector(".header").style.display="flex";
         document.querySelector(".sidebar").style.display="block";
@@ -231,27 +196,15 @@ async function signup(){
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
 
-    let res = await fetch("http://127.0.0.1:8000/signup",{
+    let res = await fetch(`${BASE_URL}/signup`,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({username,password})
     });
 
-    let data;
-    try{
-        data = await res.json();
-    }catch{
-        document.getElementById("msg").innerText = "Server error";
-        return;
-    }
-
-    if(res.status==200){
-        document.getElementById("msg").innerText = "Signup successful";
-    } else {
-        document.getElementById("msg").innerText = data.detail;
-    }
+    let data = await res.json();
+    document.getElementById("msg").innerText = data.message || data.detail;
 }
-
 
 /* CHAT */
 async function sendChat(){
@@ -262,21 +215,21 @@ async function sendChat(){
     box.innerHTML += `<div class="msg user">${text}</div>`;
     input.value="";
 
-    let res = await fetch("http://127.0.0.1:8000/chat",{
+    let res = await fetch(`${BASE_URL}/chat`,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({text})
     });
 
     let data = await res.json();
-    box.innerHTML += `<div class="msg ai">${data.response}</div>`;
+    box.innerHTML += `<div class="msg ai">${data.response || data.error}</div>`;
 }
 
-/* CODE */
+/* CODE RUN */
 async function runCode(){
     let code = document.getElementById("code-input").value;
 
-    let res = await fetch("http://127.0.0.1:8000/run",{
+    let res = await fetch(`${BASE_URL}/run`,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({code})
@@ -292,7 +245,7 @@ async function runCode(){
 async function debugCode(){
     let code = document.getElementById("debug-input").value;
 
-    let res = await fetch("http://127.0.0.1:8000/debug",{
+    let res = await fetch(`${BASE_URL}/debug`,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({code})
@@ -301,44 +254,7 @@ async function debugCode(){
     let data = await res.json();
 
     document.getElementById("debug-output").innerText =
-        data.response || "";
-}
-
-/* INTERVIEW */
-function speak(text){
-    let s = new SpeechSynthesisUtterance(text);
-    speechSynthesis.speak(s);
-}
-
-async function askInterview(){
-    let input = document.getElementById("interviewInput");
-    let box = document.getElementById("interviewBox");
-
-    let text = input.value;
-    box.innerHTML += `<div class="msg user">${text}</div>`;
-
-    let res = await fetch("http://127.0.0.1:8000/chat",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({text})
-    });
-
-    let data = await res.json();
-    box.innerHTML += `<div class="msg ai">${data.response}</div>`;
-    speak(data.response);
-}
-
-/* FRIEND */
-function sendFriend(){
-    let input = document.getElementById("friendInput");
-    let box = document.getElementById("friendsBox");
-
-    let text = input.value;
-    box.innerHTML += `<div class="msg user">${text}</div>`;
-
-    setTimeout(()=>{
-        box.innerHTML += `<div class="msg ai">Friend: Nice 😎</div>`;
-    },1000);
+        data.response || data.error || "";
 }
 
 </script>
