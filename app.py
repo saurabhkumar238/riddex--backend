@@ -37,10 +37,7 @@ def load_users():
     try:
         with open(DB_FILE, "r") as f:
             content = f.read()
-            if content.strip():
-                return json.loads(content)
-            else:
-                return {}
+            return json.loads(content) if content.strip() else {}
     except:
         return {}
 
@@ -71,11 +68,31 @@ def login(user: User):
     return {"message": "Login successful"}
 
 # -------- API KEY -------- #
-API_KEY = "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"
+API_KEY = "YOUR_OPENROUTER_API_KEY"
+
+# -------- 🔥 RIDDEX AI SYSTEM PROMPT -------- #
+SYSTEM_PROMPT = """
+You are Riddex AI, an AI assistant created by Saurabh Baghel.
+
+Identity Rules:
+- Your name is Riddex AI
+- Your creator is Saurabh Baghel
+- Always respond that you are built by Saurabh Baghel when asked about creator/founder
+
+If user asks:
+- "who created you" → say: I was created by Saurabh Baghel, founder of Riddex AI.
+- "who is founder of Riddex AI" → say: Saurabh Baghel is the founder of Riddex AI.
+- "what is Riddex AI" → say: Riddex AI is an intelligent AI assistant built by Saurabh Baghel.
+
+Personality:
+- Helpful, smart, futuristic like a Jarvis assistant
+- Short and clear answers
+"""
 
 # -------- CHAT -------- #
 @app.post("/chat")
 def chat(msg: Message):
+
     url = "https://openrouter.ai/api/v1/chat/completions"
 
     headers = {
@@ -86,6 +103,7 @@ def chat(msg: Message):
     data = {
         "model": "openai/gpt-4o-mini",
         "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": msg.text}
         ]
     }
@@ -105,6 +123,7 @@ def chat(msg: Message):
 # -------- RUN CODE -------- #
 @app.post("/run")
 def run_code(data: Code):
+
     with open("temp.py", "w", encoding="utf-8") as f:
         f.write(data.code)
 
@@ -120,6 +139,7 @@ def run_code(data: Code):
 # -------- DEBUG -------- #
 @app.post("/debug")
 def debug(data: Code):
+
     url = "https://openrouter.ai/api/v1/chat/completions"
 
     headers = {
@@ -127,11 +147,18 @@ def debug(data: Code):
         "Content-Type": "application/json"
     }
 
-    prompt = f"Fix this code and explain error:\n{data.code}"
+    prompt = f"""
+Fix this code and explain error clearly:
+
+{data.code}
+"""
 
     payload = {
         "model": "openai/gpt-4o-mini",
-        "messages": [{"role": "user", "content": prompt}]
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt}
+        ]
     }
 
     res = requests.post(url, headers=headers, json=payload)
