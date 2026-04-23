@@ -71,7 +71,7 @@ def login(user: User):
     return {"message": "Login successful"}
 
 # -------- API KEY -------- #
-API_KEY = "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"
+API_KEY = "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"
 
 # -------- CHAT -------- #
 @app.post("/chat")
