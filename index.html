@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="manifest" href="manifest.json">
 <title>Riddex AI</title>
 
 <style>
@@ -255,6 +256,10 @@ async function debugCode(){
 
     document.getElementById("debug-output").innerText =
         data.response || data.error || "";
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
 }
 
 </script>
